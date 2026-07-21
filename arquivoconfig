@@ -1,0 +1,241 @@
+import dotenv from 'dotenv';
+import path from 'node:path';
+
+import type {
+  EnvironmentConfig,
+  EnvironmentName,
+} from '../types/environment.types';
+
+const environmentName = (process.env.ENVIRONMENT ??
+  'local') as EnvironmentName;
+
+dotenv.config({
+  path: path.resolve(process.cwd(), `.env.${environmentName}`),
+});
+
+function getRequiredEnvironmentVariable(name: string): string {
+  const value = process.env[name];
+
+  if (!value) {
+    throw new Error(
+      `A variável de ambiente "${name}" não foi configurada.`,
+    );
+  }
+
+  return value;
+}
+
+export const environment: EnvironmentConfig = {
+  name: environmentName,
+  webBaseUrl: getRequiredEnvironmentVariable('WEB_BASE_URL'),
+  apiBaseUrl: process.env.API_BASE_URL ?? '',
+  testUserEmail: process.env.TEST_USER_EMAIL ?? '',
+  testUserPassword: process.env.TEST_USER_PASSWORD ?? '',
+};
+
+ENVIRONMENT=local
+
+WEB_BASE_URL=https://front.serverest.dev
+API_BASE_URL=https://serverest.dev
+
+TEST_USER_EMAIL=
+TEST_USER_PASSWORD=
+
+
+ENVIRONMENT=local
+
+WEB_BASE_URL=https://front.serverest.dev
+API_BASE_URL=https://serverest.dev
+
+TEST_USER_EMAIL=usuario@teste.com
+TEST_USER_PASSWORD=senha-teste
+
+
+
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+
+.env
+.env.*
+!.env.example
+
+
+
+export const users = {
+  invalid: {
+    email: 'usuario-inexistente@teste.com',
+    password: 'senha-invalida',
+  },
+} as const;
+
+
+
+src/pages/LoginPage.ts
+
+
+import type { Locator, Page } from '@playwright/test';
+
+export class LoginPage {
+  private readonly emailInput: Locator;
+  private readonly passwordInput: Locator;
+  private readonly submitButton: Locator;
+
+  readonly alertMessage: Locator;
+
+  constructor(private readonly page: Page) {
+    this.emailInput = page.getByTestId('email');
+    this.passwordInput = page.getByTestId('senha');
+    this.submitButton = page.getByTestId('entrar');
+
+    this.alertMessage = page.locator('[role="alert"]');
+  }
+
+  async open(): Promise<void> {
+    await this.page.goto('/login');
+  }
+
+  async fillEmail(email: string): Promise<void> {
+    await this.emailInput.fill(email);
+  }
+
+  async fillPassword(password: string): Promise<void> {
+    await this.passwordInput.fill(password);
+  }
+
+  async submit(): Promise<void> {
+    await this.submitButton.click();
+  }
+}
+
+
+import type { Page } from '@playwright/test';
+
+import { LoginPage } from '../pages/LoginPage';
+
+export class LoginFlow {
+  readonly loginPage: LoginPage;
+
+  constructor(page: Page) {
+    this.loginPage = new LoginPage(page);
+  }
+
+  async login(email: string, password: string): Promise<void> {
+    await this.loginPage.open();
+    await this.loginPage.fillEmail(email);
+    await this.loginPage.fillPassword(password);
+    await this.loginPage.submit();
+  }
+}
+
+
+
+
+import { test as base } from '@playwright/test';
+
+import { LoginAssertions } from '../assertions/LoginAssertions';
+import { LoginFlow } from '../flows/LoginFlow';
+import { LoginPage } from '../pages/LoginPage';
+
+type ApplicationFixtures = {
+  loginPage: LoginPage;
+  loginFlow: LoginFlow;
+  loginAssertions: LoginAssertions;
+};
+
+export const test = base.extend<ApplicationFixtures>({
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
+  },
+
+  loginFlow: async ({ page }, use) => {
+    await use(new LoginFlow(page));
+  },
+
+  loginAssertions: async ({ page }, use) => {
+    await use(new LoginAssertions(page));
+  },
+});
+
+export { expect } from '@playwright/test';
+
+
+
+
+new LoginPage(page);
+new LoginFlow(page);
+new LoginAssertions(page);
+
+import { users } from '../../src/data/users';
+import { test } from '../../src/fixtures/testFixtures';
+
+test.describe('Login', () => {
+  test('deve informar erro para credenciais inválidas', async ({
+    loginFlow,
+    loginAssertions,
+  }) => {
+    await loginFlow.login(
+      users.invalid.email,
+      users.invalid.password,
+    );
+
+    await loginAssertions.shouldShowAuthenticationError();
+  });
+});
+
+
+import { defineConfig, devices } from '@playwright/test';
+
+import { environment } from './src/config/environment';
+
+export default defineConfig({
+  testDir: './tests',
+
+  fullyParallel: true,
+
+  forbidOnly: Boolean(process.env.CI),
+
+  retries: process.env.CI ? 2 : 0,
+
+  workers: process.env.CI ? 1 : undefined,
+
+  reporter: [
+    ['list'],
+    [
+      'html',
+      {
+        outputFolder: 'playwright-report',
+        open: 'never',
+      },
+    ],
+  ],
+
+  use: {
+    baseURL: environment.webBaseUrl,
+
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+  },
+
+  projects: [
+    {
+      name: 'web-chromium',
+      testMatch: /web\/.*\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+
+    {
+      name: 'api',
+      testMatch: /api\/.*\.spec\.ts/,
+      use: {
+        baseURL: environment.apiBaseUrl,
+      },
+    },
+  ],
+});
+
+
