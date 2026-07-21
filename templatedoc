@@ -1,0 +1,545 @@
+# Intelligent Test Architecture - Playwright + TypeScript
+
+> Modern Test Automation Architecture using Playwright and TypeScript.
+
+---
+
+# Objective
+
+This project provides a scalable architecture for Quality Engineering using **Playwright + TypeScript**.
+
+The initial focus is **Web UI automation**, but the architecture is prepared to evolve to:
+
+- Web UI
+- API Testing
+- Integration Testing
+- Contract Testing
+- Component Testing
+- Performance Support
+- CI/CD
+- Observability
+- AI Assisted Testing
+
+---
+
+# Technology Stack
+
+- Playwright
+- TypeScript
+- NodeJS
+- Dotenv
+- GitHub Actions (future)
+- Allure (future)
+
+---
+
+# Project Architecture
+
+```
+src/
+│
+├── pages/
+│
+├── flows/
+│
+├── components/
+│
+├── assertions/
+│
+├── fixtures/
+│
+├── data/
+│
+├── config/
+│
+├── utils/
+│
+└── types/
+
+tests/
+│
+├── web/
+│
+└── api/
+
+docs/
+
+```
+
+---
+
+# Responsibility of each folder
+
+## pages
+
+Represents application screens.
+
+Contains:
+
+- Locators
+- Screen actions
+- Navigation
+
+Example:
+
+```
+LoginPage
+CustomerPage
+DashboardPage
+```
+
+---
+
+## flows
+
+Represents business journeys.
+
+Example:
+
+```
+LoginFlow
+
+CreateCustomerFlow
+
+CheckoutFlow
+```
+
+A Flow may use one or multiple Pages.
+
+---
+
+## assertions
+
+Reusable validations.
+
+Example:
+
+```
+shouldLoginSuccessfully()
+
+shouldShowInvalidPassword()
+
+shouldCreateCustomer()
+```
+
+---
+
+## components
+
+Reusable page components.
+
+Example:
+
+```
+MenuComponent
+
+HeaderComponent
+
+SidebarComponent
+
+ModalComponent
+```
+
+---
+
+## fixtures
+
+Playwright Fixtures.
+
+Responsible for creating reusable objects.
+
+Example:
+
+```
+loginFlow
+
+loginAssertions
+
+loginPage
+```
+
+---
+
+## data
+
+Test data.
+
+Example:
+
+```
+users.ts
+
+products.ts
+
+addresses.ts
+```
+
+---
+
+## config
+
+Environment configuration.
+
+Responsible for:
+
+- URLs
+- Credentials
+- Environment
+- Timeouts
+
+---
+
+## utils
+
+Technical helper methods.
+
+Never place business rules here.
+
+---
+
+## types
+
+Project typings.
+
+Example:
+
+```
+Environment
+
+User
+
+Product
+```
+
+---
+
+# Test Architecture
+
+```
+Test
+
+↓
+
+Fixture
+
+↓
+
+Flow
+
+↓
+
+Page
+
+↓
+
+Locator
+```
+
+Validation
+
+```
+Test
+
+↓
+
+Assertions
+
+↓
+
+Page
+```
+
+---
+
+# Environment files
+
+```
+.env.example
+
+.env.local
+
+.env.dev
+
+.env.hml
+```
+
+Example:
+
+```
+ENVIRONMENT=local
+
+WEB_BASE_URL=https://front.serverest.dev
+
+API_BASE_URL=https://serverest.dev
+
+TEST_USER_EMAIL=
+
+TEST_USER_PASSWORD=
+```
+
+---
+
+# Creating the project
+
+## Create folder
+
+```bash
+mkdir intelligent-test-architecture-playwright-typescript
+
+cd intelligent-test-architecture-playwright-typescript
+```
+
+---
+
+## Initialize Node
+
+```bash
+npm init -y
+```
+
+---
+
+## Install Playwright
+
+```bash
+npm install -D @playwright/test typescript @types/node
+```
+
+---
+
+## Install browsers
+
+```bash
+npx playwright install
+```
+
+or
+
+```bash
+npx playwright install chromium
+```
+
+---
+
+## Install dotenv
+
+```bash
+npm install dotenv
+```
+
+---
+
+## Create TypeScript configuration
+
+```bash
+npx tsc --init
+```
+
+---
+
+## Create folders
+
+```bash
+mkdir -p src/pages
+mkdir -p src/flows
+mkdir -p src/components
+mkdir -p src/assertions
+mkdir -p src/fixtures
+mkdir -p src/data
+mkdir -p src/config
+mkdir -p src/utils
+mkdir -p src/types
+
+mkdir -p tests/web
+mkdir -p tests/api
+
+mkdir docs
+```
+
+---
+
+## Create base files
+
+```bash
+touch playwright.config.ts
+
+touch README.md
+
+touch .env.example
+
+touch .env.local
+
+touch .gitignore
+
+touch src/pages/LoginPage.ts
+
+touch src/flows/LoginFlow.ts
+
+touch src/assertions/LoginAssertions.ts
+
+touch src/fixtures/testFixtures.ts
+
+touch src/data/users.ts
+
+touch src/config/environment.ts
+
+touch src/types/environment.types.ts
+
+touch tests/web/login.spec.ts
+```
+
+---
+
+# package.json scripts
+
+```json
+{
+  "scripts": {
+
+    "test":"playwright test",
+
+    "test:web":"playwright test --project=web-chromium",
+
+    "test:api":"playwright test --project=api",
+
+    "test:headed":"playwright test --project=web-chromium --headed",
+
+    "test:debug":"playwright test --project=web-chromium --debug",
+
+    "test:ui":"playwright test --ui",
+
+    "test:list":"playwright test --list",
+
+    "report":"playwright show-report",
+
+    "typecheck":"tsc --noEmit"
+
+  }
+}
+```
+
+---
+
+# Daily Commands
+
+Update repository
+
+```bash
+git pull
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Check TypeScript
+
+```bash
+npm run typecheck
+```
+
+List tests
+
+```bash
+npm run test:list
+```
+
+Run Web Tests
+
+```bash
+npm run test:web
+```
+
+Run Headed
+
+```bash
+npm run test:headed
+```
+
+Run Debug
+
+```bash
+npm run test:debug
+```
+
+Open UI Mode
+
+```bash
+npm run test:ui
+```
+
+Open Report
+
+```bash
+npm run report
+```
+
+---
+
+# First Deliverable
+
+The first milestone of this architecture should contain:
+
+- Playwright configured
+- TypeScript configured
+- Environment configuration
+- Login Page
+- Login Flow
+- Login Assertions
+- Login Test
+- HTML Report
+- Screenshot on failure
+- Video on failure
+- Trace on failure
+
+---
+
+# Next Steps
+
+Sprint 2
+
+- BasePage
+- BaseComponent
+- BaseElement
+
+Sprint 3
+
+- API Layer
+
+Sprint 4
+
+- Component Library
+
+Sprint 5
+
+- Test Data Builder
+
+Sprint 6
+
+- Authentication
+
+Sprint 7
+
+- Mock Server
+
+Sprint 8
+
+- Reporting
+
+Sprint 9
+
+- CI/CD
+
+Sprint 10
+
+- AI Assisted Testing
+
+---
+
+# Project Philosophy
+
+This project follows one principle:
+
+> Keep the architecture simple enough to start, but extensible enough to support enterprise Quality Engineering.
